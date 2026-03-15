@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="fr" id="htmlLang">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulaire Commande - E-Commerce Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-shopping-cart"></i>
+            <span data-i18n="app-title">E-Commerce Management</span>
+        </div>
+        <div class="navbar-actions">
+            <div class="language-selector">
+                <select id="languageSelect">
+                    <option value="fr">Français</option>
+                    <option value="ar">العربية</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <div class="user-info">
+                <i class="fas fa-user"></i>
+                <span id="usernameDisplay"></span>
+            </div>
+            <button class="btn-logout" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span data-i18n="logout">Déconnexion</span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="dashboard.html">
+                        <i class="fas fa-chart-line"></i>
+                        <span data-i18n="dashboard">Tableau de bord</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="users.html">
+                        <i class="fas fa-users"></i>
+                        <span data-i18n="users">Utilisateurs</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="categories.html">
+                        <i class="fas fa-tags"></i>
+                        <span data-i18n="categories">Catégories</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="products.html">
+                        <i class="fas fa-box"></i>
+                        <span data-i18n="products">Produits</span>
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="orders.html">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span data-i18n="orders">Commandes</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="promocodes.html">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span data-i18n="promos">Codes Promo</span>
+                    </a>
+                </li>
+            </ul>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 id="formTitle">Ajouter Commande</h1>
+            </div>
+
+            <div class="form-container">
+                <form id="orderForm">
+                    <input type="hidden" id="orderId">
+                    
+                    <div class="form-group">
+                        <label for="userId">Utilisateur *</label>
+                        <select id="userId" required>
+                            <option value="">Sélectionner un utilisateur</option>
+                        </select>
+                        <span class="error-message" id="userError"></span>
+                    </div>
+                    <input type="hidden" id="isAdminCheck">
+
+                    <div class="form-group">
+                        <label>Produits *</label>
+                        <div id="productsContainer">
+                            <div class="product-item" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                                <select class="product-select" style="flex: 1; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                                    <option value="">Sélectionner un produit</option>
+                                </select>
+                                <input type="number" class="product-quantity" min="1" value="1" style="width: 100px; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                                <span class="product-price" style="min-width: 80px; text-align: right;">0 €</span>
+                                <button type="button" class="btn btn-danger remove-product" style="padding: 10px 15px;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary" id="addProductBtn" style="margin-top: 10px;">
+                            <i class="fas fa-plus"></i> Ajouter un produit
+                        </button>
+                        <span class="error-message" id="productsError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="total">Total (€) *</label>
+                        <input type="number" id="total" step="0.01" min="0" required readonly style="background-color: #f3f4f6;">
+                        <span class="error-message" id="totalError"></span>
+                    </div>
+
+                    <div class="form-group" id="discountGroup" style="display: none;">
+                        <label for="discountAmount">Remise Appliquée (%)</label>
+                        <input type="number" id="discountAmount" step="0.01" min="0" readonly style="background-color: #f3f4f6;">
+                    </div>
+
+                    <div class="form-group" id="finalTotalGroup" style="display: none;">
+                        <label for="finalTotal">Total après Remise (€)</label>
+                        <input type="number" id="finalTotal" step="0.01" min="0" readonly style="background-color: #e8f5e9; font-weight: bold;">
+                    </div>
+
+                    <input type="hidden" id="appliedDiscount" value="0">
+
+                    <div class="form-group">
+                        <label for="status">Statut *</label>
+                        <select id="status" required>
+                            <option value="">Sélectionner un statut</option>
+                            <option value="pending">En attente</option>
+                            <option value="processing">En traitement</option>
+                            <option value="completed">Terminée</option>
+                            <option value="cancelled">Annulée</option>
+                        </select>
+                        <span class="error-message" id="statusError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date">Date *</label>
+                        <input type="date" id="date" required>
+                        <span class="error-message" id="dateError"></span>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='orders.html'">
+                            <i class="fas fa-times"></i> Annuler
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/trad.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.requireAuth();
+            const currentUser = auth.getCurrentUser();
+            if (currentUser) document.getElementById('usernameDisplay').textContent = currentUser.name;
+            document.getElementById('logoutBtn').addEventListener('click', () => auth.logout());
+            
+            const isAdmin = currentUser && currentUser.role === 'admin';
+            const currentUserId = currentUser ? (currentUser.userId || currentUser.id) : null;
+            document.getElementById('isAdminCheck').value = isAdmin ? 'true' : 'false';
+            
+            // Load users
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const userSelect = document.getElementById('userId');
+            users.forEach(u => {
+                const option = document.createElement('option');
+                option.value = u.id;
+                option.textContent = u.name;
+                userSelect.appendChild(option);
+            });
+            
+            // Si l'utilisateur n'est pas admin, désactiver le select et pré-remplir avec son ID
+            if (!isAdmin) {
+                userSelect.disabled = true;
+                userSelect.value = currentUserId;
+            }
+
+            // Load products
+            const products = JSON.parse(localStorage.getItem('products') || '[]');
+            const activeProducts = products.filter(p => p.active !== false);
+
+            // Fonction pour mettre à jour le total
+            function updateTotal() {
+                let total = 0;
+                document.querySelectorAll('.product-item').forEach(item => {
+                    const select = item.querySelector('.product-select');
+                    const quantity = parseInt(item.querySelector('.product-quantity').value) || 0;
+                    if (select.value) {
+                        const product = activeProducts.find(p => p.id === parseInt(select.value));
+                        if (product) {
+                            total += product.price * quantity;
+                        }
+                    }
+                });
+                document.getElementById('total').value = total.toFixed(2);
+                
+                // Appliquer la remise si l'utilisateur n'est pas admin
+                if (!isAdmin) {
+                    const userEmail = currentUser.email;
+                    const appliedDiscounts = JSON.parse(localStorage.getItem(`discounts_applied_${userEmail}`) || '[]');
+                    const totalDiscount = appliedDiscounts.reduce((sum, d) => sum + d.discount, 0);
+                    
+                    if (totalDiscount > 0) {
+                        document.getElementById('discountGroup').style.display = 'block';
+                        document.getElementById('finalTotalGroup').style.display = 'block';
+                        document.getElementById('discountAmount').value = totalDiscount.toFixed(2);
+                        
+                        const finalTotal = total - (total * totalDiscount / 100);
+                        document.getElementById('finalTotal').value = finalTotal.toFixed(2);
+                        document.getElementById('appliedDiscount').value = totalDiscount;
+                    } else {
+                        document.getElementById('discountGroup').style.display = 'none';
+                        document.getElementById('finalTotalGroup').style.display = 'none';
+                        document.getElementById('appliedDiscount').value = '0';
+                    }
+                }
+            }
+
+            // Fonction pour charger les produits dans un select
+            function loadProductsToSelect(selectElement, selectedProductId = null) {
+                selectElement.innerHTML = '<option value="">Sélectionner un produit</option>';
+                activeProducts.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.id;
+                    option.textContent = `${product.name} - ${product.price} € (Stock: ${product.stock})`;
+                    if (selectedProductId && product.id === selectedProductId) {
+                        option.selected = true;
+                    }
+                    selectElement.appendChild(option);
+                });
+            }
+
+            // Charger les produits dans le premier select
+            const firstSelect = document.querySelector('.product-select');
+            loadProductsToSelect(firstSelect);
+
+            // Event listener pour changement de produit
+            document.addEventListener('change', (e) => {
+                if (e.target.classList.contains('product-select')) {
+                    const item = e.target.closest('.product-item');
+                    const productId = e.target.value;
+                    const priceSpan = item.querySelector('.product-price');
+                    if (productId) {
+                        const product = activeProducts.find(p => p.id === parseInt(productId));
+                        if (product) {
+                            const quantity = parseInt(item.querySelector('.product-quantity').value) || 1;
+                            priceSpan.textContent = (product.price * quantity).toFixed(2) + ' €';
+                        }
+                    } else {
+                        priceSpan.textContent = '0 €';
+                    }
+                    updateTotal();
+                }
+                if (e.target.classList.contains('product-quantity')) {
+                    const item = e.target.closest('.product-item');
+                    const select = item.querySelector('.product-select');
+                    const priceSpan = item.querySelector('.product-price');
+                    if (select.value) {
+                        const product = activeProducts.find(p => p.id === parseInt(select.value));
+                        if (product) {
+                            const quantity = parseInt(e.target.value) || 1;
+                            priceSpan.textContent = (product.price * quantity).toFixed(2) + ' €';
+                        }
+                    }
+                    updateTotal();
+                }
+            });
+
+            // Event listener pour supprimer un produit
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.remove-product')) {
+                    const item = e.target.closest('.product-item');
+                    if (document.querySelectorAll('.product-item').length > 1) {
+                        item.remove();
+                        updateTotal();
+                    } else {
+                        alert('Vous devez avoir au moins un produit dans la commande.');
+                    }
+                }
+            });
+
+            // Ajouter un produit
+            document.getElementById('addProductBtn').addEventListener('click', () => {
+                const container = document.getElementById('productsContainer');
+                const newItem = document.createElement('div');
+                newItem.className = 'product-item';
+                newItem.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px; align-items: center;';
+                newItem.innerHTML = `
+                    <select class="product-select" style="flex: 1; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                        <option value="">Sélectionner un produit</option>
+                    </select>
+                    <input type="number" class="product-quantity" min="1" value="1" style="width: 100px; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                    <span class="product-price" style="min-width: 80px; text-align: right;">0 €</span>
+                    <button type="button" class="btn btn-danger remove-product" style="padding: 10px 15px;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(newItem);
+                loadProductsToSelect(newItem.querySelector('.product-select'));
+            });
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('id');
+            if (orderId) {
+                document.getElementById('formTitle').textContent = 'Modifier Commande';
+                const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+                const order = orders.find(o => o.id === parseInt(orderId));
+                if (order) {
+                    // Vérifier que l'utilisateur peut modifier cette commande
+                    if (!isAdmin && order.userId !== currentUserId) {
+                        alert('Accès refusé. Vous ne pouvez modifier que vos propres commandes.');
+                        window.location.href = 'orders.html';
+                        return;
+                    }
+                    
+                    document.getElementById('orderId').value = order.id;
+                    document.getElementById('userId').value = order.userId;
+                    document.getElementById('total').value = order.total;
+                    document.getElementById('status').value = order.status;
+                    if (order.date) {
+                        document.getElementById('date').value = order.date.split('T')[0];
+                    }
+                    // Charger les produits de la commande
+                    if (order.items && order.items.length > 0) {
+                        const container = document.getElementById('productsContainer');
+                        container.innerHTML = '';
+                        order.items.forEach((item, index) => {
+                            const productItem = document.createElement('div');
+                            productItem.className = 'product-item';
+                            productItem.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px; align-items: center;';
+                            productItem.innerHTML = `
+                                <select class="product-select" style="flex: 1; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                                    <option value="">Sélectionner un produit</option>
+                                </select>
+                                <input type="number" class="product-quantity" min="1" value="${item.quantity || 1}" style="width: 100px; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                                <span class="product-price" style="min-width: 80px; text-align: right;">0 €</span>
+                                <button type="button" class="btn btn-danger remove-product" style="padding: 10px 15px;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            `;
+                            container.appendChild(productItem);
+                            const select = productItem.querySelector('.product-select');
+                            loadProductsToSelect(select, item.productId);
+                            select.value = item.productId;
+                            const product = activeProducts.find(p => p.id === item.productId);
+                            if (product) {
+                                const quantity = item.quantity || 1;
+                                productItem.querySelector('.product-price').textContent = (product.price * quantity).toFixed(2) + ' €';
+                            }
+                        });
+                    }
+                }
+            } else {
+                document.getElementById('date').value = new Date().toISOString().split('T')[0];
+                // Si c'est un utilisateur normal, pré-remplir avec son ID
+                if (currentUser) {
+                    userSelect.value = currentUser.userId || currentUser.id;
+                }
+            }
+
+            // Initialiser le total
+            updateTotal();
+
+            document.getElementById('orderForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // Valider qu'au moins un produit est sélectionné
+                const selectedProducts = [];
+                document.querySelectorAll('.product-item').forEach(item => {
+                    const select = item.querySelector('.product-select');
+                    const quantity = parseInt(item.querySelector('.product-quantity').value) || 0;
+                    if (select.value && quantity > 0) {
+                        selectedProducts.push({
+                            productId: parseInt(select.value),
+                            quantity: quantity
+                        });
+                    }
+                });
+
+                if (selectedProducts.length === 0) {
+                    document.getElementById('productsError').textContent = 'Veuillez sélectionner au moins un produit.';
+                    return;
+                } else {
+                    document.getElementById('productsError').textContent = '';
+                }
+
+                const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+                const formData = {
+                    id: orderId ? parseInt(orderId) : (orders.length > 0 ? Math.max(...orders.map(o => o.id)) + 1 : 1),
+                    userId: parseInt(document.getElementById('userId').value),
+                    total: parseFloat(document.getElementById('total').value),
+                    status: document.getElementById('status').value,
+                    date: new Date(document.getElementById('date').value).toISOString(),
+                    items: selectedProducts,
+                    discount: !isAdmin ? parseFloat(document.getElementById('appliedDiscount').value) : 0,
+                    finalTotal: !isAdmin ? parseFloat(document.getElementById('finalTotal').value) : parseFloat(document.getElementById('total').value)
+                };
+                if (orderId) {
+                    const index = orders.findIndex(o => o.id === parseInt(orderId));
+                    if (index !== -1) orders[index] = { ...orders[index], ...formData };
+                } else {
+                    orders.push(formData);
+                }
+                localStorage.setItem('orders', JSON.stringify(orders));
+                alert('Commande enregistrée avec succès!');
+                window.location.href = 'orders.html';
+            });
+        });
+    </script>
+</body>
+</html>
+

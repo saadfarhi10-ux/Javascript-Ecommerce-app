@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr" id="htmlLang">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulaire Produit - E-Commerce Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-shopping-cart"></i>
+            <span data-i18n="app-title">E-Commerce Management</span>
+        </div>
+        <div class="navbar-actions">
+            <div class="language-selector">
+                <select id="languageSelect">
+                    <option value="fr">Français</option>
+                    <option value="ar">العربية</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <div class="user-info">
+                <i class="fas fa-user"></i>
+                <span id="usernameDisplay"></span>
+            </div>
+            <button class="btn-logout" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span data-i18n="logout">Déconnexion</span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="dashboard.html">
+                        <i class="fas fa-chart-line"></i>
+                        <span data-i18n="dashboard">Tableau de bord</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="users.html">
+                        <i class="fas fa-users"></i>
+                        <span data-i18n="users">Utilisateurs</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="categories.html">
+                        <i class="fas fa-tags"></i>
+                        <span data-i18n="categories">Catégories</span>
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="products.html">
+                        <i class="fas fa-box"></i>
+                        <span data-i18n="products">Produits</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="orders.html">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span data-i18n="orders">Commandes</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="promocodes.html">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span data-i18n="promos">Codes Promo</span>
+                    </a>
+                </li>
+            </ul>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 id="formTitle" data-i18n="add">Ajouter Produit</h1>
+            </div>
+
+            <div class="form-container">
+                <form id="productForm">
+                    <input type="hidden" id="productId">
+                    
+                    <div class="form-group">
+                        <label for="name">Nom *</label>
+                        <input type="text" id="name" required>
+                        <span class="error-message" id="nameError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Catégorie *</label>
+                        <select id="category" required>
+                            <option value="">Sélectionner une catégorie</option>
+                        </select>
+                        <span class="error-message" id="categoryError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">Prix (€) *</label>
+                        <input type="number" id="price" step="0.01" min="0" required>
+                        <span class="error-message" id="priceError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stock">Stock *</label>
+                        <input type="number" id="stock" min="0" required>
+                        <span class="error-message" id="stockError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" rows="4"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="active" checked> Produit actif
+                        </label>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='products.html'">
+                            <i class="fas fa-times"></i> <span data-i18n="cancel">Annuler</span>
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> <span data-i18n="save">Enregistrer</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/trad.js"></script>
+    <script src="../js/products-form.js"></script>
+</body>
+</html>
+

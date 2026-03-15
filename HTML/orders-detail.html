@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr" id="htmlLang">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails Commande - E-Commerce Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-shopping-cart"></i>
+            <span data-i18n="app-title">E-Commerce Management</span>
+        </div>
+        <div class="navbar-actions">
+            <div class="language-selector">
+                <select id="languageSelect">
+                    <option value="fr">Français</option>
+                    <option value="ar">العربية</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <div class="user-info">
+                <i class="fas fa-user"></i>
+                <span id="usernameDisplay"></span>
+            </div>
+            <button class="btn-logout" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span data-i18n="logout">Déconnexion</span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="dashboard.html">
+                        <i class="fas fa-chart-line"></i>
+                        <span data-i18n="dashboard">Tableau de bord</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="users.html">
+                        <i class="fas fa-users"></i>
+                        <span data-i18n="users">Utilisateurs</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="categories.html">
+                        <i class="fas fa-tags"></i>
+                        <span data-i18n="categories">Catégories</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="products.html">
+                        <i class="fas fa-box"></i>
+                        <span data-i18n="products">Produits</span>
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="orders.html">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span data-i18n="orders">Commandes</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="promocodes.html">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span data-i18n="promos">Codes Promo</span>
+                    </a>
+                </li>
+            </ul>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="detail-container">
+                <div class="detail-header">
+                    <h1>Détails Commande</h1>
+                    <div>
+                        <button class="btn btn-info" id="exportPdfBtn">
+                            <i class="fas fa-file-pdf"></i> <span data-i18n="export-pdf">Export PDF</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="window.location.href='orders.html'">
+                            <i class="fas fa-arrow-left"></i> <span data-i18n="back">Retour</span>
+                        </button>
+                        <button class="btn btn-primary" id="editBtn">
+                            <i class="fas fa-edit"></i> <span data-i18n="edit">Modifier</span>
+                        </button>
+                        <button class="btn btn-danger" id="deleteBtn">
+                            <i class="fas fa-trash"></i> <span data-i18n="delete">Supprimer</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="detail-content" id="orderDetails"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/trad.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.requireAuth();
+            const currentUser = auth.getCurrentUser();
+            if (currentUser) document.getElementById('usernameDisplay').textContent = currentUser.name;
+            document.getElementById('logoutBtn').addEventListener('click', () => auth.logout());
+            
+            const isAdmin = currentUser && currentUser.role === 'admin';
+            const currentUserId = currentUser ? (currentUser.userId || currentUser.id) : null;
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('id');
+            if (!orderId) {
+                window.location.href = 'orders.html';
+                return;
+            }
+
+            function loadOrderDetails(id) {
+                const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const order = orders.find(o => o.id === parseInt(id));
+                if (!order) {
+                    window.location.href = 'orders.html';
+                    return;
+                }
+                
+                // Vérifier que l'utilisateur peut voir cette commande
+                if (!isAdmin && order.userId !== currentUserId) {
+                    alert('Accès refusé. Vous ne pouvez voir que vos propres commandes.');
+                    window.location.href = 'orders.html';
+                    return;
+                }
+                
+                // Masquer les boutons Modifier et Supprimer si l'utilisateur n'est pas admin
+                if (!isAdmin) {
+                    const editBtn = document.getElementById('editBtn');
+                    const deleteBtn = document.getElementById('deleteBtn');
+                    if (editBtn) editBtn.style.display = 'none';
+                    if (deleteBtn) deleteBtn.style.display = 'none';
+                }
+                const user = users.find(u => u.id === order.userId);
+                const detailsContainer = document.getElementById('orderDetails');
+                detailsContainer.innerHTML = `
+                    <div class="detail-item">
+                        <label>ID</label>
+                        <p>${order.id}</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Utilisateur</label>
+                        <p>${user ? user.name : `User ${order.userId}`}</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Total</label>
+                        <p>${order.total} €</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Statut</label>
+                        <p>${order.status}</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Date</label>
+                        <p>${order.date ? new Date(order.date).toLocaleDateString() : 'N/A'}</p>
+                    </div>
+                `;
+            }
+
+            loadOrderDetails(orderId);
+
+            // Ajouter les event listeners seulement si l'utilisateur est admin
+            if (isAdmin) {
+                const editBtn = document.getElementById('editBtn');
+                const deleteBtn = document.getElementById('deleteBtn');
+                
+                if (editBtn) {
+                    editBtn.addEventListener('click', () => {
+                        window.location.href = `orders-form.html?id=${orderId}`;
+                    });
+                }    <script src="../js/auth.js"></script>
+    <script src="../js/trad.js"></script>
+    <script src="../js/orders-detail.js"></script>
+</body>
+</html>
+
